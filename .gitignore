@@ -1,0 +1,52 @@
+## Visual Studio / C# ##
+bin/
+obj/
+*.user
+*.suo
+*.svclog
+*.vs/
+*.pdb
+*.cache
+*.log
+.vscode/
+
+# Rider
+.idea/
+
+# NuGet
+*.nupkg
+packages/
+packages.config
+*.xls
+Client/bin/
+Client/obj/
+
+# Entity Framework
+Migrations/  # you might want this under source control; if so remove this line
+*.db
+
+# ASP.NET Core
+appsettings.Development.json
+appsettings.Secret.json
+wwwroot/uploads/
+
+# dotnet watch
+.dotnetwatch/
+
+## Node / Angular ##
+node_modules/
+dist/
+tmp/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# VS Code
+.vscode/*
+
+# OS junk
+Thumbs.db
+Desktop.ini
