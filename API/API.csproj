@@ -20,6 +20,8 @@
     <Folder Include="Data\" />
     <Folder Include="DTOs\" />
     <Folder Include="Endpoints\" />
+    <Folder Include="Extensions\" />
+    <Folder Include="Hubs\" />
     <Folder Include="Models\" />
     <Folder Include="Services\" />
   </ItemGroup>
