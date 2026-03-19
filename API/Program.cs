@@ -76,12 +76,13 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 app.UseHttpsRedirection();
+app.UseRouting();
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseStaticFiles();
 app.MapHub<ChatHub>("/hubs/chat");
-app.UseCors();
 app.MapAccountEndpoints();
 
 app.Run();

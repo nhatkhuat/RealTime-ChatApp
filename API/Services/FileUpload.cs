@@ -23,6 +23,7 @@ public class FileUpload
             await file.CopyToAsync(stream);
         }
 
-        return "/uploads/" + uniqueFileName;
+        // Return the filename only; callers can build a URL as needed.
+        return uniqueFileName;
     }
 }
