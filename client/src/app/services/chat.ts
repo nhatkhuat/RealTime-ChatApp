@@ -30,19 +30,58 @@ export class ChatService {
       .then(() => console.log('Connected to chat hub'))
       .catch(err => console.error('Error connecting to chat hub:', err));
 
+    this.hubConnection.on('Notify', (user: User) => {
+      Notification.requestPermission().then(permission => {
+        if (permission == 'granted') {
+          new Notification('Active now ❤️‍🔥' + user.userName, {
+            body: user.userName + ' is online now',
+            icon: user.profileImage
+          });
+        }
+      });
+    });
+
+    this.hubConnection.on('NotifyTyping', (senderUserName: string) => {
+      this.onlineUsers.update(
+        users =>
+          users.map(u => {
+            if (u.userName === senderUserName) {
+              u.isTyping = true;
+            }
+            return u;
+          })
+      );
+      setTimeout(() => {
+        this.onlineUsers.update(
+          users =>
+            users.map(u => {
+              if (u.userName === senderUserName) {
+                u.isTyping = false;
+              }
+              return u;
+            })
+        );
+      }, 2000);
+    });
+
     this.hubConnection.on('OnlineUsers', (user: User[]) => {
       console.log('Received online users:', user);
       this.onlineUsers.set(
         user.filter(u => u.userName !== this.authService.currentUser?.userName)
       );
     });
-
     this.hubConnection.on('ReceiveMessageList', (messages: Message[]) => {
       // Replace the current message list with the one received from the server.
       // The server sends the full conversation for the selected chat.
       this.chatMessages.set(messages);
       this.isLoading.set(false);
     });
+
+    this.hubConnection.on('ReceiveNewMessage', (message: Message) => {
+      document.title = '(1) New message';
+      this.chatMessages.update(messages => [...messages, message]);
+    });
+
   }
 
   disconnect() {
@@ -52,6 +91,28 @@ export class ChatService {
         .catch(err => console.error('Error disconnecting from chat hub:', err));
     }
   }
+
+  sendMessage(message: string) {
+    this.chatMessages.update(messages => {
+      const newMessage: Message = {
+        id: Date.now(),
+        senderId: this.authService.currentUser?.id || null,
+        receiverId: this.currentOpenedChat()?.id || null,
+        content: message,
+        createdDate: new Date().toISOString(),
+        isRead: false
+      };
+      return [...messages, newMessage];
+    });
+
+    this.hubConnection?.invoke('SendMessage', {
+      receiverId: this.currentOpenedChat()?.id,
+      content: message
+    }).then((id) => console.log('Message sent to: ', id))
+      .catch(err => console.error('Error sending message:', err));
+
+  }
+
   status(userName: string): string {
     const currentChatUser = this.currentOpenedChat();
     if (!currentChatUser) {
@@ -69,5 +130,11 @@ export class ChatService {
     this.hubConnection?.invoke("LoadMessages", this.currentOpenedChat()?.id, pageNumber)
       .then().catch(err => console.error('Error loading messages:', err))
       .finally(() => this.isLoading.set(false));
+  }
+
+  notifyTyping() {
+    this.hubConnection?.invoke('NotifyTyping', this.currentOpenedChat()?.userName)
+      .then(() => console.log('Notified typing to: ', this.currentOpenedChat()?.userName))
+      .catch(err => console.error('Error notifying typing:', err));
   }
 }

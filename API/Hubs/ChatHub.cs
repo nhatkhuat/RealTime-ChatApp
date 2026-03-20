@@ -41,7 +41,7 @@ public class ChatHub(UserManager<AppUser> userManager, AppDbContext dbContext) :
                 UnreadCount = dbContext.Messages.Count(m => m.ReceiverId == currentUser.Id && !m.IsRead)
             };
             onlineUsers.TryAdd(username, user);
-            await Clients.AllExcept(connectionId).SendAsync("notify", currentUser);
+            await Clients.AllExcept(connectionId).SendAsync("Notify", currentUser);
         }
         if (!string.IsNullOrEmpty(receiverId))
         {
@@ -101,7 +101,7 @@ public class ChatHub(UserManager<AppUser> userManager, AppDbContext dbContext) :
         };
         dbContext.Messages.Add(newMessage);
         await dbContext.SaveChangesAsync();
-        await Clients.User(recepientId).SendAsync("ReceivedNewMessage", newMessage);
+        await Clients.User(recepientId).SendAsync("ReceiveNewMessage", newMessage);
     }
 
     public async Task NotifyTyping(string recepientUserName)
@@ -112,7 +112,7 @@ public class ChatHub(UserManager<AppUser> userManager, AppDbContext dbContext) :
         var connectionId = onlineUsers.Values.FirstOrDefault(u => u.UserName == recepientUserName)?.ConnectionId;
         if (connectionId != null)
         {
-            await Clients.Client(connectionId).SendAsync("notifyTyping", senderUserName);
+            await Clients.Client(connectionId).SendAsync("NotifyTyping", senderUserName);
         }
     }
     public override async Task OnDisconnectedAsync(Exception? exception)

@@ -20,13 +20,14 @@
         <app-chat-box />
     </div>
     <div class="absolute flex items-center bottom-0 border-t w-full bg-white p-4">
-        <input type="text" placeholder="Type a message..." [(ngModel)]="message"
+        <input type="text" placeholder="Type a message..." (input)="chatService.notifyTyping()"
+            (keydown.enter)="sendMessage()" [(ngModel)]="message"
             class="w-full bg-gray-200 focus:outline-none text-gray-900 border rounded-full px-6 p-2">
         <mat-icon (click)="sendMessage()" class="ml-5 cursor-pointer hover:text-blue-900">
             send
         </mat-icon>
     </div>
-</div>>
+</div>
 }@else {
 <div class="flex flex-col items-center justify-center p-4 h-full">
     <img src="chat_open.svg" alt="Open Chat" />

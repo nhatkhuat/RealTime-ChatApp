@@ -16,10 +16,10 @@ export class ChatWindow {
   message: string = '';
 
   sendMessage() {
-    // Implement the logic to send a message using the chat service
-    console.log('Sending message:', this.message);
-    // Clear the input after sending
+    if (!this.message) return;
+    this.chatService.sendMessage(this.message);
     this.message = '';
+
   }
 
 }
