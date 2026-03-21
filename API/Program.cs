@@ -83,6 +83,7 @@ app.UseAuthorization();
 
 app.UseStaticFiles();
 app.MapHub<ChatHub>("/hubs/chat");
+app.MapHub<VideoChatHub>("/hubs/video");
 app.MapAccountEndpoints();
 
 app.Run();

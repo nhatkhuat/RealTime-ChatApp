@@ -9,11 +9,12 @@ import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiResponse } from '../models/api-response';
 import { Router, RouterLink } from '@angular/router';
+import { Button } from "../components/button/button";
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [MatFormFieldModule, FormsModule, MatIconModule, MatInputModule, MatButtonModule, MatSnackBarModule, RouterLink],
+  imports: [MatFormFieldModule, FormsModule, MatIconModule, MatInputModule, MatButtonModule, MatSnackBarModule, RouterLink, Button],
   templateUrl: './register.html',
   styleUrls: ['./register.css'],
 })
@@ -45,6 +46,7 @@ export class Register {
   }
 
   register() {
+    this.authService.isLoading.set(true);
     const formData = new FormData();
     // Identity requires a unique username - use the email if none is provided.
     formData.append('username', this.userName || this.email);
@@ -59,13 +61,16 @@ export class Register {
     this.authService.register(formData).subscribe({
       next: () => {
         this.snackBar.open('Registered successfully', 'Close', { duration: 3000 });
+        this.authService.isLoading.set(false);
       },
       error: (error: HttpErrorResponse) => {
         const err = error.error as ApiResponse<string>;
         this.snackBar.open(`Registration failed: ${err.error}`, 'Close', { duration: 5000 });
+        this.authService.isLoading.set(false);
       },
       complete: () => {
         this.router.navigate(['/']);
+        this.authService.isLoading.set(false);
       }
     });
   }

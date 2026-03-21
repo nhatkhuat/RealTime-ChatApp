@@ -2,7 +2,7 @@ import { inject, Injectable, Signal, signal, WritableSignal } from '@angular/cor
 import { User } from '../models/user';
 import { AuthService } from './auth-service';
 // import * as signalR from '@microsoft/signalr';
-import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
+import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { Message } from '../models/message';
 
 @Injectable({
@@ -16,9 +16,22 @@ export class ChatService {
   currentOpenedChat: WritableSignal<User | null> = signal(null);
   chatMessages: WritableSignal<Message[]> = signal([]);
   isLoading: WritableSignal<boolean> = signal(true);
+  currentPage = 1; // public để component chat-box truy cập
   private hubConnection?: HubConnection;
 
+  autoScrollEnabled: WritableSignal<boolean> = signal(true);
+
   startConnection(token: string, senderId?: string) {
+    if (this.hubConnection?.state === HubConnectionState.Connected) return;
+
+    if (this.hubConnection) {
+      this.hubConnection.off('Notify');
+      this.hubConnection.off('NotifyTyping');
+      this.hubConnection.off('OnlineUsers');
+      this.hubConnection.off('ReceiveMessageList');
+      this.hubConnection.off('ReceiveNewMessage');
+    }
+
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(`${this.hubUrl}?senderId=${senderId || ''}`, {
         accessTokenFactory: () => token
@@ -71,13 +84,29 @@ export class ChatService {
       );
     });
     this.hubConnection.on('ReceiveMessageList', (messages: Message[]) => {
-      // Replace the current message list with the one received from the server.
-      // The server sends the full conversation for the selected chat.
-      this.chatMessages.set(messages);
+      console.log('ReceiveMessageList', { page: this.currentPage, count: messages.length });
+      this.isLoading.set(true);
+
+      const sortedMessages = [...messages].sort((a, b) =>
+        new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime()
+      );
+
+      if (this.currentPage > 1) {
+        // cũ hơn lên trên
+        this.chatMessages.update(existing => [...sortedMessages, ...existing]);
+      } else {
+        // trang 1
+        this.chatMessages.set(sortedMessages);
+      }
+
       this.isLoading.set(false);
     });
 
+
     this.hubConnection.on('ReceiveNewMessage', (message: Message) => {
+      let audio = new Audio('/assets/notification.mp3');
+      audio.play();
+
       document.title = '(1) New message';
       this.chatMessages.update(messages => [...messages, message]);
     });
@@ -127,6 +156,8 @@ export class ChatService {
   }
 
   loadMessages(pageNumber: number) {
+    this.currentPage = pageNumber;
+    this.isLoading.set(true);
     this.hubConnection?.invoke("LoadMessages", this.currentOpenedChat()?.id, pageNumber)
       .then().catch(err => console.error('Error loading messages:', err))
       .finally(() => this.isLoading.set(false));
@@ -136,5 +167,9 @@ export class ChatService {
     this.hubConnection?.invoke('NotifyTyping', this.currentOpenedChat()?.userName)
       .then(() => console.log('Notified typing to: ', this.currentOpenedChat()?.userName))
       .catch(err => console.error('Error notifying typing:', err));
+  }
+
+  resetPagination() {
+    this.currentPage = 1;
   }
 }

@@ -2,7 +2,7 @@
     <div class="h-auto w-3/5" style="background-image: url('register.svg'); background-repeat: no-repeat; background-size: contain;
     background-position: bottom; background-color: white;">
     </div>
-    <div class="bg-white my-10 rounded w-1/4 flex flex-col gap-3 shadow-sm drop-shadow-md">
+    <div class="bg-white my-10 rounded md:w-1/4 flex flex-col gap-3 shadow-sm drop-shadow-md">
         <div class="text-center mt-10">
             <i class="material-icons text-10xl text-blue-800">person</i>
             <div class="text-2xl my-2 font-medium">
@@ -30,10 +30,8 @@
                 </mat-icon>
             </mat-form-field>
 
-            <button type="submit" [disabled]="!userForm.valid"
-                class="w-full mb-5 bg-blue-500 hover:bg-blue-600 text-white rounded-md p-2 disabled:opacity-30">
-                Login
-            </button>
+            <app-button [isDisabled]="!userForm.valid" [buttonText]="'Login'" [isLoading]="authService.isLoading()"
+                (buttonClick)="login()"></app-button>
             <p class="font-bold text-xs text-center text-gray-500 pb-10">
                 Don't have an account? <a [routerLink]="'/register'" class="text-blue-500 hover:underline">Register</a>
             </p>

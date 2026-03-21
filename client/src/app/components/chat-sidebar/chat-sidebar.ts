@@ -31,9 +31,10 @@ export class ChatSidebar implements OnInit {
   }
 
   openChatWindow(user: User) {
-    // Clear previous chat messages when switching to a new user.
-    // this.chatService.chatMessages.set([]);
-    // this.chatService.isLoading.set(true);
+    // reset lưu số trang khi chuyển chat mới
+    this.chatService.resetPagination();
+    this.chatService.chatMessages.set([]);
+    this.chatService.isLoading.set(true);
 
     this.chatService.currentOpenedChat.set(user);
     this.chatService.loadMessages(1);

@@ -84,6 +84,7 @@ public class ChatHub(UserManager<AppUser> userManager, AppDbContext dbContext) :
                 await dbContext.SaveChangesAsync();
             }
         }
+        // await Task.Delay(2000);
         await Clients.User(currentUser.Id).SendAsync("ReceiveMessageList", messages);
     }
     public async Task SendMessage(MessageRequestDto message)

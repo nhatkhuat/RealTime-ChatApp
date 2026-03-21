@@ -10,10 +10,11 @@ import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiResponse } from '../models/api-response';
 import { Router, RouterLink } from '@angular/router';
+import { Button } from "../components/button/button";
 
 @Component({
   selector: 'app-login',
-  imports: [MatFormFieldModule, FormsModule, MatIconModule, MatInputModule, MatButtonModule, MatSnackBarModule, RouterLink],
+  imports: [MatFormFieldModule, FormsModule, MatIconModule, MatInputModule, MatButtonModule, MatSnackBarModule, RouterLink, Button],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
@@ -27,18 +28,21 @@ export class Login {
   hide = signal(false);
   router = inject(Router);
 
-
   login() {
+    this.authService.isLoading.set(true);
     this.authService.login(this.email, this.password).subscribe({
       next: () => {
         this.authService.me().subscribe();
-        this.snackBar.open('Login successful', 'Close', { duration: 3000 });
+        this.snackBar.open('Login successful', 'Close', { duration: 1000 });
+        this.authService.isLoading.set(false);
       },
       error: (error: HttpErrorResponse) => {
         const err = error.error as ApiResponse<string>;
         this.snackBar.open(`Login failed: ${err.error}`, 'Close', { duration: 5000 });
+        this.authService.isLoading.set(false);
       },
       complete: () => {
+        this.authService.isLoading.set(false);
         this.router.navigate(['/']);
       }
     });

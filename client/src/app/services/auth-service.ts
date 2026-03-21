@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { ApiResponse } from '../models/api-response';
 import { User } from '../models/user';
@@ -11,6 +11,7 @@ export class AuthService {
   private baseUrl = 'http://localhost:5000/api/account';
   private token = "token";
   private httpClient = inject(HttpClient);
+  isLoading = signal(false);
 
   register(data: FormData): Observable<ApiResponse<string>> {
     return this.httpClient
