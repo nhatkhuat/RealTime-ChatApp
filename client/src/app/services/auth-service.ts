@@ -3,12 +3,13 @@ import { inject, Injectable, signal } from '@angular/core';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 import { ApiResponse } from '../models/api-response';
 import { User } from '../models/user';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private baseUrl = 'http://localhost:5000/api/account';
+  private baseUrl = `${environment.apiBaseUrl}/api/account`;
   private httpClient = inject(HttpClient);
   private currentUserSignal = signal<User | null>(null);
   private sessionLoaded = signal(false);

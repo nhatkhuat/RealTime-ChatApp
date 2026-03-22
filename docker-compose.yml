@@ -1,0 +1,35 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Your_strong_password123!"
+    ports:
+      - "1433:1433"
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./API
+      dockerfile: Dockerfile
+    image: chatapp-api:local
+    ports:
+      - "5000:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=ChatAppDb;User Id=sa;Password=Your_strong_password123!;TrustServerCertificate=True;MultipleActiveResultSets=true"
+      JWTSettings__SecurityKey: "super secret key this is really long aaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    image: chatapp-client:local
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+    restart: unless-stopped

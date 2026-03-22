@@ -6,6 +6,7 @@ import { AuthService } from './auth-service';
 import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { Message } from '../models/message';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface MessagePayload {
   receiverId: string | null | undefined;
@@ -29,8 +30,8 @@ export class ChatService {
 
   private authService = inject(AuthService);
   private httpClient = inject(HttpClient);
-  private hubUrl = 'http://localhost:5000/hubs/chat';
-  private fileApiUrl = 'http://localhost:5000/api/files';
+  private hubUrl = `${environment.apiBaseUrl}/hubs/chat`;
+  private fileApiUrl = `${environment.apiBaseUrl}/api/files`;
   onlineUsers: WritableSignal<User[]> = signal([]);
   currentOpenedChat: WritableSignal<User | null> = signal(null);
   chatMessages: WritableSignal<Message[]> = signal([]);

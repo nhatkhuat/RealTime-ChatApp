@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 
 export class VideoChatService {
-  private hubUrl = 'http://localhost:5000/hubs/video';
+  private hubUrl = `${environment.apiBaseUrl}/hubs/video`;
   public hubConnection!: HubConnection;
   public incomingCall = false;
   public isCallActive = false;

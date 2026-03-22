@@ -107,10 +107,11 @@ public static class AccountEndPoint
         httpContext.Response.Cookies.Append(AccessTokenCookieName, token, new CookieOptions
         {
             HttpOnly = true,
-            Secure = httpContext.Request.IsHttps,
-            SameSite = SameSiteMode.Lax,
+            Secure = true,
+            SameSite = SameSiteMode.None,
             Expires = DateTimeOffset.UtcNow.AddDays(1),
-            Path = "/"
+            Path = "/",
+            Domain = httpContext.Request.Host.Host
         });
     }
 
