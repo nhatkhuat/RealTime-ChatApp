@@ -31,6 +31,7 @@ builder.Services.AddIdentityCore<AppUser>()
 .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<IFileStorage, FileUpload>();
 
 builder.Services.AddAuthentication(opt =>
 {

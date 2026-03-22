@@ -18,7 +18,7 @@ public static class AccountEndPoint
     {
         var group = app.MapGroup("/api/account").WithTags("account");
 
-        group.MapPost("/register", async (HttpContext httpContext, UserManager<AppUser> userManager,
+        group.MapPost("/register", async (HttpContext httpContext, UserManager<AppUser> userManager, IFileStorage fileStorage,
         [FromForm] string FullName, [FromForm] string Email, [FromForm] string password, [FromForm] string username,
         [FromForm] IFormFile profileImage) =>
         {
@@ -32,7 +32,12 @@ public static class AccountEndPoint
             {
                 return Results.BadRequest(Response<string>.Failure("Profile image is required."));
             }
-            var pictureFileName = await FileUpload.UploadFile(profileImage);
+
+            if (!FileUpload.IsImageAttachment(profileImage)) return Results.BadRequest(Response<string>.Failure("Profile image must be an image file."));
+
+            var pictureFileName = await fileStorage.SaveFileAsync(profileImage);
+            if (string.IsNullOrWhiteSpace(pictureFileName)) return Results.BadRequest(Response<string>.Failure("Failed to upload profile image."));
+
             var picture = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/uploads/{pictureFileName}";
 
             var user = new AppUser
@@ -102,7 +107,7 @@ public static class AccountEndPoint
         httpContext.Response.Cookies.Append(AccessTokenCookieName, token, new CookieOptions
         {
             HttpOnly = true,
-            Secure = false,
+            Secure = httpContext.Request.IsHttps,
             SameSite = SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.AddDays(1),
             Path = "/"
@@ -114,7 +119,7 @@ public static class AccountEndPoint
         httpContext.Response.Cookies.Delete(AccessTokenCookieName, new CookieOptions
         {
             HttpOnly = true,
-            Secure = false,
+            Secure = httpContext.Request.IsHttps,
             SameSite = SameSiteMode.Lax,
             Path = "/"
         });
