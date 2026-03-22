@@ -11,18 +11,30 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var allowedOrigins = new[]
+{
+    "http://localhost:4200",
+    "https://localhost:4200",
+    "https://chatapp-ui-nhatka.azurewebsites.net"
+};
+
+const string CorsPolicyName = "AllowSpecificOrigins";
+
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
+    options.AddPolicy(CorsPolicyName, policy =>
     {
-        builder.WithOrigins("http://localhost:4200", "https://localhost:4200")
-               .AllowAnyHeader()
-               .AllowAnyMethod()
-               .AllowCredentials();
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
-builder.Services.AddDbContext<AppDbContext>(x => x.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<AppDbContext>(x =>
+    x.UseSqlServer(connectionString));
 
 var JwtSetting = builder.Configuration.GetSection("JWTSettings");
 
@@ -83,13 +95,43 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseCors();
+app.UseCors(CorsPolicyName);
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+    await next();
+});
+
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        if (!string.IsNullOrWhiteSpace(connectionString))
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            dbContext.Database.Migrate();
+        }
+        else
+        {
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            logger.LogWarning("Connection string 'DefaultConnection' is not configured. EF Core migration was skipped.");
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Migration failed");
+    }
+}
+
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseStaticFiles();
-app.MapHub<ChatHub>("/hubs/chat");
-app.MapHub<VideoChatHub>("/hubs/video");
+app.MapHub<ChatHub>("/hubs/chat").RequireCors(CorsPolicyName);
+app.MapHub<VideoChatHub>("/hubs/video").RequireCors(CorsPolicyName);
 app.MapAccountEndpoints();
 app.MapFileEndpoints();
 
