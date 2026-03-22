@@ -29,6 +29,7 @@ Migrations/  # you might want this under source control; if so remove this line
 appsettings.Development.json
 appsettings.Secret.json
 wwwroot/uploads/
+.env
 
 # dotnet watch
 .dotnetwatch/
