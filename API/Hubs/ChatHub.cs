@@ -21,7 +21,13 @@ public class ChatHub(UserManager<AppUser> userManager, AppDbContext dbContext) :
         var httpContext = Context.GetHttpContext();
         var receiverId = httpContext?.Request.Query["receiverId"].ToString();
         var username = Context.User?.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(username))
+            return;
+
         var currentUser = await userManager.FindByNameAsync(username);
+        if (currentUser == null)
+            return;
+
         var connectionId = Context.ConnectionId;
         if (onlineUsers.ContainsKey(username))
         {
@@ -55,6 +61,9 @@ public class ChatHub(UserManager<AppUser> userManager, AppDbContext dbContext) :
         int pageSize = 10;
 
         var username = Context.User!.Identity!.Name;
+        if (string.IsNullOrWhiteSpace(username))
+            return;
+
         var currentUser = await userManager.FindByNameAsync(username);
         if (currentUser == null)
             return;
@@ -71,6 +80,9 @@ public class ChatHub(UserManager<AppUser> userManager, AppDbContext dbContext) :
             SenderId = m.SenderId,
             ReceiverId = m.ReceiverId,
             Content = m.Content,
+            AttachmentUrl = m.AttachmentUrl,
+            AttachmentType = m.AttachmentType,
+            AttachmentName = m.AttachmentName,
             CreatedDate = m.CreatedDate
         })
         .ToListAsync();
@@ -90,19 +102,45 @@ public class ChatHub(UserManager<AppUser> userManager, AppDbContext dbContext) :
     public async Task SendMessage(MessageRequestDto message)
     {
         var senderId = Context.User!.Identity!.Name;
+        if (string.IsNullOrWhiteSpace(senderId))
+            return;
+
         var recepientId = message.ReceiverId;
+        if (string.IsNullOrWhiteSpace(recepientId))
+            return;
+
         var currentUser = await userManager.FindByNameAsync(senderId);
+        if (currentUser == null)
+            return;
+
         var newMessage = new Message
         {
-            Sender = await userManager.FindByNameAsync(senderId),
+            Sender = currentUser,
             Receiver = await userManager.FindByIdAsync(recepientId),
             IsRead = false,
             Content = message.Content,
+            AttachmentUrl = message.AttachmentUrl,
+            AttachmentType = message.AttachmentType,
+            AttachmentName = message.AttachmentName,
             CreatedDate = DateTime.UtcNow
         };
         dbContext.Messages.Add(newMessage);
         await dbContext.SaveChangesAsync();
-        await Clients.User(recepientId).SendAsync("ReceiveNewMessage", newMessage);
+
+        var response = new MessageResponseDto
+        {
+            Id = newMessage.Id,
+            SenderId = newMessage.SenderId,
+            ReceiverId = newMessage.ReceiverId,
+            Content = newMessage.Content,
+            AttachmentUrl = newMessage.AttachmentUrl,
+            AttachmentType = newMessage.AttachmentType,
+            AttachmentName = newMessage.AttachmentName,
+            CreatedDate = newMessage.CreatedDate,
+            IsRead = newMessage.IsRead
+        };
+
+        await Clients.User(recepientId).SendAsync("ReceiveNewMessage", response);
     }
 
     public async Task NotifyTyping(string recepientUserName)
@@ -119,7 +157,10 @@ public class ChatHub(UserManager<AppUser> userManager, AppDbContext dbContext) :
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var senderUserName = Context.User!.Identity!.Name;
-        onlineUsers.TryRemove(senderUserName, out _);
+        if (!string.IsNullOrWhiteSpace(senderUserName))
+        {
+            onlineUsers.TryRemove(senderUserName, out _);
+        }
 
         await Clients.All.SendAsync("OnlineUsers", await GetOnlineUsers());
 
@@ -134,7 +175,7 @@ public class ChatHub(UserManager<AppUser> userManager, AppDbContext dbContext) :
             UserName = u.UserName,
             FullName = u.FullName,
             ProfileImage = u.ProfileImage,
-            IsOnline = onlineUsersSet.Contains(u.UserName),
+            IsOnline = !string.IsNullOrWhiteSpace(u.UserName) && onlineUsersSet.Contains(u.UserName),
             UnreadCount = dbContext.Messages.Count(m => m.ReceiverId == username
             && m.SenderId == u.Id
             && !m.IsRead)

@@ -25,14 +25,46 @@
     </div>
 
     <div class="shrink-0 border-t border-slate-200 bg-white/90 px-3 py-3 backdrop-blur-xl sm:px-4">
+        @if(pendingAttachments.length > 0){
+        <div
+            class="mb-3 flex max-h-28 flex-wrap items-center gap-2 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2">
+            @for (item of pendingAttachments; track $index) {
+            <div class="group relative">
+                @if(item.attachmentType === 'image'){
+                <img [src]="item.previewUrl!" [alt]="item.file.name" class="h-16 w-16 rounded-lg object-cover" />
+                }@else {
+                <div
+                    class="flex h-16 min-w-24 items-center rounded-lg border border-slate-200 bg-slate-50 px-2 text-xs text-slate-600">
+                    {{ item.file.name }}
+                </div>
+                }
+                <button type="button" (click)="removeAttachment($index)"
+                    class="absolute -right-2 -top-2 hidden h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-[10px] text-white group-hover:flex">
+                    x
+                </button>
+            </div>
+            }
+        </div>
+        }
+
         <div
             class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm focus-within:border-blue-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100">
+            <input type="file" #fileInput class="hidden" multiple accept="image/*,.pdf,.txt,.docx"
+                (change)="onFileSelected($event)">
+            <button type="button" (click)="fileInput.click()" [disabled]="isUploading"
+                class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm transition hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-60">
+                <mat-icon>attach_file</mat-icon>
+            </button>
             <input type="text" placeholder="Type a message..." (input)="chatService.notifyTyping()"
-                (keydown.enter)="sendMessage()" [(ngModel)]="message"
+                (keydown.enter)="sendMessage()" (paste)="onPaste($event)" [(ngModel)]="message"
                 class="w-full bg-transparent text-slate-800 placeholder:text-slate-400 outline-none">
-            <button type="button" (click)="sendMessage()"
-                class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-md shadow-blue-200 transition hover:bg-blue-700">
+            <button type="button" (click)="sendMessage()" [disabled]="isUploading"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-md shadow-blue-200 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70">
+                @if(isUploading){
+                <mat-icon>hourglass_top</mat-icon>
+                }@else {
                 <mat-icon>send</mat-icon>
+                }
             </button>
         </div>
     </div>

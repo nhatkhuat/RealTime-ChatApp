@@ -87,7 +87,6 @@ export class ChatBox implements AfterViewChecked {
       top: this.chatBox.nativeElement.scrollHeight,
       behavior: 'smooth'
     });
-    this.isAtTop = false;
   }
 
   scrollToTop(): void {
@@ -96,6 +95,5 @@ export class ChatBox implements AfterViewChecked {
       top: 0,
       behavior: 'smooth'
     });
-    this.isAtTop = true;
   }
 }

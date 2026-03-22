@@ -45,12 +45,18 @@ export class ChatSidebar implements OnInit {
   });
 
   logout() {
+    this.chatService.currentOpenedChat.set(null);
+    this.chatService.chatMessages.set([]);
+    this.chatService.resetPagination();
     this.chatService.disconnect();
     this.authService.clearSession();
     this.authService.logout();
     this.router.navigate(['/login']);
   }
   ngOnInit(): void {
+    this.chatService.currentOpenedChat.set(null);
+    this.chatService.chatMessages.set([]);
+    this.chatService.resetPagination();
     this.chatService.startConnection();
 
     this.searchInput$

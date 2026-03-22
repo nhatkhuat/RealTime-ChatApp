@@ -25,9 +25,25 @@
                     [alt]="chatService.currentOpenedChat()?.fullName" class="h-full w-full object-cover" />
             </div>
             <div class="max-w-[80%] rounded-2xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                @if(item.attachmentUrl){
+                @if(item.attachmentType === 'image'){
+                <a [href]="item.attachmentUrl" target="_blank" rel="noopener noreferrer">
+                    <img [src]="item.attachmentUrl" [alt]="item.attachmentName || 'image'"
+                        class="mb-2 max-h-64 rounded-xl object-cover" />
+                </a>
+                } @else {
+                <a [href]="item.attachmentUrl" target="_blank" rel="noopener noreferrer"
+                    class="mb-2 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-blue-700 hover:text-blue-800">
+                    <mat-icon class="!h-4 !w-4 !text-base">description</mat-icon>
+                    {{ item.attachmentName || 'Attachment' }}
+                </a>
+                }
+                }
+                @if(item.content){
                 <span class="block text-sm leading-6 text-slate-700">
                     {{item.content}}
                 </span>
+                }
                 <span class="mt-1 block text-right text-[10px] text-slate-400">
                     {{item.createdDate | date: 'short'}}
                 </span>
@@ -37,9 +53,25 @@
         <div class="flex items-end gap-2 self-end">
             <div
                 class="max-w-[80%] rounded-2xl rounded-br-md bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-white shadow-lg shadow-blue-200/50">
+                @if(item.attachmentUrl){
+                @if(item.attachmentType === 'image'){
+                <a [href]="item.attachmentUrl" target="_blank" rel="noopener noreferrer">
+                    <img [src]="item.attachmentUrl" [alt]="item.attachmentName || 'image'"
+                        class="mb-2 max-h-64 rounded-xl object-cover" />
+                </a>
+                } @else {
+                <a [href]="item.attachmentUrl" target="_blank" rel="noopener noreferrer"
+                    class="mb-2 inline-flex items-center gap-2 rounded-lg border border-blue-300/40 bg-blue-500/20 px-3 py-2 text-xs font-medium text-white hover:text-blue-100">
+                    <mat-icon class="!h-4 !w-4 !text-base">description</mat-icon>
+                    {{ item.attachmentName || 'Attachment' }}
+                </a>
+                }
+                }
+                @if(item.content){
                 <span class="block text-sm leading-6">
                     {{item.content}}
                 </span>
+                }
                 <span class="mt-1 block text-right text-[10px] text-blue-100/80">
                     {{item.createdDate | date: 'short'}}
                 </span>

@@ -8,6 +8,9 @@ public class MessageRequestDto
     public string? SenderId { get; set; }
     public string? ReceiverId { get; set; }
     public string? Content { get; set; }
+    public string? AttachmentUrl { get; set; }
+    public string? AttachmentType { get; set; }
+    public string? AttachmentName { get; set; }
     public bool IsRead { get; set; }
     public DateTime CreatedDate { get; set; }
 }
