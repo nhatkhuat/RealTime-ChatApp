@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ElementRef, inject, ViewChild, viewChild } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, inject, ViewChild } from '@angular/core';
 import { ChatService } from '../../services/chat';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { AuthService } from '../../services/auth-service';
@@ -10,15 +10,21 @@ import { MatIconModule, MatIcon } from "@angular/material/icon";
   imports: [MatProgressSpinner, DatePipe, MatIconModule, MatIcon],
   templateUrl: './chat-box.html',
   styles: [`
+    :host{
+      display:block;
+      height:100%;
+      min-height:0;
+    }
     .chat-box{
       scroll-behavior: smooth;
-     padding: 10px;
-     background-color: #f5f5f5;
+     padding: 1rem;
+     background: linear-gradient(180deg, rgba(248,250,252,0.95) 0%, rgba(241,245,249,0.98) 100%);
      display: flex;
      flex-direction: column;
-     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-     height: 70vh;
-     border-radius: 5px;
+     box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 10px 30px rgba(15,23,42,0.05);
+     height: 100%;
+     min-height: 0;
+     border-radius: 1.5rem;
      overflow-y: auto;
     }
     .chat-box::-webkit-scrollbar{
@@ -41,9 +47,9 @@ import { MatIconModule, MatIcon } from "@angular/material/icon";
       border-radius:10px;
     }
     .chat-icon{
-      width:40px;
-      height:40px;
-      font-size:48px;
+      width:48px;
+      height:48px;
+      font-size:56px;
       }
     `],
 })
@@ -53,10 +59,21 @@ export class ChatBox implements AfterViewChecked {
 
   chatService = inject(ChatService);
   authService = inject(AuthService);
+  isAtTop = true;
 
   loadMoreMessages() {
     this.chatService.loadMessages(this.chatService.currentPage + 1);
     this.scrollToTop();
+  }
+
+  onScroll(): void {
+    if (!this.chatBox) return;
+    const el = this.chatBox.nativeElement;
+    const atTop = el.scrollTop <= 10;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 10;
+
+    this.isAtTop = atTop;
+    this.chatService.autoScrollEnabled.set(atBottom);
   }
 
   ngAfterViewChecked(): void {
@@ -66,11 +83,11 @@ export class ChatBox implements AfterViewChecked {
   }
 
   private scrollToBottom(): void {
-    this.chatService.autoScrollEnabled.set(true);
     this.chatBox?.nativeElement.scrollTo({
       top: this.chatBox.nativeElement.scrollHeight,
       behavior: 'smooth'
     });
+    this.isAtTop = false;
   }
 
   scrollToTop(): void {
@@ -79,5 +96,6 @@ export class ChatBox implements AfterViewChecked {
       top: 0,
       behavior: 'smooth'
     });
+    this.isAtTop = true;
   }
 }

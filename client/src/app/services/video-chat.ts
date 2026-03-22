@@ -1,6 +1,5 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
-import { AuthService } from './auth-service';
 import { BehaviorSubject, Subject } from 'rxjs';
 
 @Injectable({
@@ -17,7 +16,6 @@ export class VideoChatService {
   public callEnded = new Subject<void>();
   private ringAudio?: HTMLAudioElement;
 
-  private authService = inject(AuthService);
   public offerReceived = new BehaviorSubject<{ senderId: string, offer: RTCSessionDescriptionInit } | null>(null);
   public answerReceived = new BehaviorSubject<{ senderId: string, answer: RTCSessionDescription } | null>(null);
   public iceCandidateReceived = new BehaviorSubject<{ senderId: string, candidate: RTCIceCandidate } | null>(null);
@@ -26,7 +24,7 @@ export class VideoChatService {
   startConnection() {
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(this.hubUrl, {
-        accessTokenFactory: () => this.authService.getAccessToken || ''
+        withCredentials: true
       })
       .withAutomaticReconnect()
       .build();

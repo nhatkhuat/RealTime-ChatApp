@@ -22,7 +22,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(x => x.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var JwtSetting = builder.Configuration.GetSection("JWTSettings");
@@ -54,11 +53,18 @@ builder.Services.AddAuthentication(opt =>
         OnMessageReceived = context =>
         {
             var accessToken = context.Request.Query["access_token"];
+            var cookieToken = context.Request.Cookies["access_token"];
             var path = context.HttpContext.Request.Path;
 
             if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
             {
                 context.Token = accessToken;
+                return Task.CompletedTask;
+            }
+
+            if (!string.IsNullOrEmpty(cookieToken))
+            {
+                context.Token = cookieToken;
             }
             return Task.CompletedTask;
         }
@@ -73,7 +79,6 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
 }
 app.UseHttpsRedirection();
 app.UseRouting();

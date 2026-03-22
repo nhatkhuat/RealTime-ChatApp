@@ -1,35 +1,52 @@
 @if(chatService.currentOpenedChat()){
-<div class="relative w-full bg=[#dfe7f1] h-full ">
-    <div class="chat-header flex justify-between items-center border-b w-full bg-white p-4">
-        <div>
-            <span class="font-bold leading-normal">
-                {{ chatService.currentOpenedChat()?.fullName | titlecase }}
-            </span>
-            <br />
-            <span class="text-gray-400 text-sm font-bold">
-                {{ chatService.status(chatService.currentOpenedChat()?.userName!) }}
-            </span>
+<div class="flex h-full min-h-0 flex-col bg-gradient-to-br from-slate-50 via-white to-sky-50">
+    <div
+        class="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white/90 px-4 py-4 backdrop-blur-xl">
+        <div class="flex min-w-0 items-center gap-3">
+            <img [src]="chatService.currentOpenedChat()?.profileImage || 'https://randomuser.me/api/portraits/men/1.jpg'"
+                class="h-11 w-11 rounded-full object-cover ring-2 ring-slate-100 shadow-sm" alt="Profile picture" />
+            <div class="min-w-0">
+                <div class="truncate font-semibold text-slate-800">
+                    {{ chatService.currentOpenedChat()?.fullName | titlecase }}
+                </div>
+                <div class="text-sm text-slate-500">
+                    {{ chatService.status(chatService.currentOpenedChat()?.userName!) }}
+                </div>
+            </div>
         </div>
-        <div class="cursor-pointer hover:text-blue-500" (click)="displayDialog(chatService.currentOpenedChat()!.id)">
-            <mat-icon class="cursor-pointer hover:text-red-500">
-                video_call
-            </mat-icon>
-        </div>
+        <button mat-icon-button class="!text-slate-500 hover:!text-blue-600"
+            (click)="displayDialog(chatService.currentOpenedChat()!.id)">
+            <mat-icon>video_call</mat-icon>
+        </button>
     </div>
-    <div>
+
+    <div class="flex-1 min-h-0 overflow-hidden px-3 py-3 sm:px-4">
         <app-chat-box />
     </div>
-    <div class="absolute flex items-center bottom-0 border-t w-full bg-white p-4">
-        <input type="text" placeholder="Type a message..." (input)="chatService.notifyTyping()"
-            (keydown.enter)="sendMessage()" [(ngModel)]="message"
-            class="w-full bg-gray-200 focus:outline-none text-gray-900 border rounded-full px-6 p-2">
-        <mat-icon (click)="sendMessage()" class="ml-5 cursor-pointer hover:text-blue-900">
-            send
-        </mat-icon>
+
+    <div class="shrink-0 border-t border-slate-200 bg-white/90 px-3 py-3 backdrop-blur-xl sm:px-4">
+        <div
+            class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm focus-within:border-blue-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100">
+            <input type="text" placeholder="Type a message..." (input)="chatService.notifyTyping()"
+                (keydown.enter)="sendMessage()" [(ngModel)]="message"
+                class="w-full bg-transparent text-slate-800 placeholder:text-slate-400 outline-none">
+            <button type="button" (click)="sendMessage()"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-md shadow-blue-200 transition hover:bg-blue-700">
+                <mat-icon>send</mat-icon>
+            </button>
+        </div>
     </div>
 </div>
 }@else {
-<div class="flex flex-col items-center justify-center p-4 md:h-full">
-    <img src="chat_open.svg" alt="Open Chat" />
+<div
+    class="flex h-full flex-col items-center justify-center gap-4 bg-gradient-to-br from-slate-50 to-sky-50 p-6 text-center">
+    <div class="rounded-full bg-white p-6 shadow-lg shadow-slate-200/70">
+        <img src="chat_open.svg" alt="Open Chat" class="h-40 w-40 object-contain" />
+    </div>
+    <div>
+        <h3 class="text-xl font-semibold text-slate-700">Select a conversation</h3>
+        <p class="mt-2 max-w-sm text-sm text-slate-500">Choose a user from the left panel to start chatting right away.
+        </p>
+    </div>
 </div>
 }

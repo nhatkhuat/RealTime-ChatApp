@@ -1,10 +1,39 @@
-<app-chat-sidebar class=" bg-white border-r md:hidden" />
-<div class="flex rounded-3xl h-full justify-between">
-    <app-chat-sidebar class=" bg-white border-r hidden md:block w-1/2" />
-    <div class="w-full">
-        <app-chat-window />
+<div
+    class="relative flex h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200 p-2 md:p-4">
+    <button type="button" (click)="openSidebar()"
+        class="absolute left-4 top-4 z-40 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-lg shadow-slate-200/70 backdrop-blur-xl lg:hidden">
+        <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+            <mat-icon>menu</mat-icon>
+        </span>
+        Users
+    </button>
+
+    @if (sidebarOpen()) {
+    <div class="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-[2px] lg:hidden" (click)="closeSidebar()"></div>
+    <div
+        class="fixed inset-y-0 left-0 z-50 w-[88vw] max-w-[360px] overflow-hidden rounded-r-3xl border border-slate-200 bg-white/95 shadow-2xl shadow-slate-900/20 backdrop-blur-xl lg:hidden">
+        <div class="absolute right-3 top-3 z-10">
+            <button type="button" (click)="closeSidebar()"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm ring-1 ring-slate-200">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+        <app-chat-sidebar (userSelected)="closeSidebar()" class="h-full min-h-0" />
     </div>
-    <div class="bg-gray-50 border-l hidden md:block md:w-1/2">
-        <app-chat-right-sidebar />
+    }
+
+    <div
+        class="hidden min-h-0 shrink-0 overflow-hidden rounded-3xl border border-slate-200 bg-white/90 shadow-xl shadow-slate-200/60 backdrop-blur-xl lg:flex lg:h-full lg:w-[340px]">
+        <app-chat-sidebar (userSelected)="closeSidebar()" class="min-h-0 flex-1" />
+    </div>
+
+    <div
+        class="flex min-w-0 flex-1 min-h-0 overflow-hidden rounded-3xl border border-slate-200 bg-white/80 shadow-xl shadow-slate-200/60 backdrop-blur-xl">
+        <app-chat-window class="min-w-0 flex-1 min-h-0" />
+    </div>
+
+    <div
+        class="hidden min-h-0 overflow-hidden rounded-3xl border border-slate-200 bg-white/90 shadow-xl shadow-slate-200/60 backdrop-blur-xl lg:flex lg:w-[320px] xl:w-[360px]">
+        <app-chat-right-sidebar class="min-h-0 flex-1" />
     </div>
 </div>

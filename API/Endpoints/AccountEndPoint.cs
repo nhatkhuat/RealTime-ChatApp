@@ -12,6 +12,8 @@ namespace API.Endpoints;
 
 public static class AccountEndPoint
 {
+    private const string AccessTokenCookieName = "access_token";
+
     public static RouteGroupBuilder MapAccountEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/account").WithTags("account");
@@ -52,7 +54,7 @@ public static class AccountEndPoint
             return Results.Ok(Response<string>.Success("", "User created successfully."));
         }).DisableAntiforgery();
 
-        group.MapPost("/login", async (UserManager<AppUser> userManager, TokenService tokenService, LoginDto loginDto) =>
+        group.MapPost("/login", async (HttpContext httpContext, UserManager<AppUser> userManager, TokenService tokenService, LoginDto loginDto) =>
         {
             if (loginDto is null)
             {
@@ -69,17 +71,52 @@ public static class AccountEndPoint
                 return Results.BadRequest(Response<string>.Failure("Invalid password."));
             }
             var token = tokenService.GenerateToken(user.Id, user.UserName!);
-            return Results.Ok(Response<string>.Success(token, "Login successful."));
+            AppendAuthCookie(httpContext, token);
+            return Results.Ok(Response<string>.Success(string.Empty, "Login successful."));
 
         });
+
+        group.MapPost("/logout", (HttpContext httpContext) =>
+        {
+            ClearAuthCookie(httpContext);
+            return Results.Ok(Response<string>.Success(string.Empty, "Logout successful."));
+        }).RequireAuthorization();
 
         group.MapGet("/me", async (UserManager<AppUser> userManager, HttpContext httpContext) =>
         {
             var currentLoggedInUserId = httpContext.User.GetUserId();
             var user = await userManager.Users.SingleOrDefaultAsync(x => x.Id == currentLoggedInUserId.ToString());
 
+            if (user is null)
+            {
+                return Results.Unauthorized();
+            }
+
             return Results.Ok(Response<AppUser>.Success(user, "User fetched successfully."));
         }).RequireAuthorization();
         return group;
+    }
+
+    private static void AppendAuthCookie(HttpContext httpContext, string token)
+    {
+        httpContext.Response.Cookies.Append(AccessTokenCookieName, token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddDays(1),
+            Path = "/"
+        });
+    }
+
+    private static void ClearAuthCookie(HttpContext httpContext)
+    {
+        httpContext.Response.Cookies.Delete(AccessTokenCookieName, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
+            Path = "/"
+        });
     }
 }

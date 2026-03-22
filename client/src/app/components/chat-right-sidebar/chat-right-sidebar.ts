@@ -6,7 +6,7 @@ import { TitleCasePipe } from '@angular/common';
   selector: 'app-chat-right-sidebar',
   imports: [TitleCasePipe],
   templateUrl: './chat-right-sidebar.html',
-  styles: ``,
+  styles: [`:host { display: block; height: 100%; min-height: 0; }`],
 })
 export class ChatRightSidebar {
   chatService = inject(ChatService);

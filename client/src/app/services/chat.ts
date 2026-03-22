@@ -21,7 +21,7 @@ export class ChatService {
 
   autoScrollEnabled: WritableSignal<boolean> = signal(true);
 
-  startConnection(token: string, senderId?: string) {
+  startConnection(senderId?: string) {
     if (this.hubConnection?.state === HubConnectionState.Connected) return;
 
     if (this.hubConnection) {
@@ -34,7 +34,7 @@ export class ChatService {
 
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(`${this.hubUrl}?senderId=${senderId || ''}`, {
-        accessTokenFactory: () => token
+        withCredentials: true
       })
       .withAutomaticReconnect()
       .build();

@@ -32,19 +32,23 @@ export class Login {
     this.authService.isLoading.set(true);
     this.authService.login(this.email, this.password).subscribe({
       next: () => {
-        this.authService.me().subscribe();
-        this.snackBar.open('Login successful', 'Close', { duration: 1000 });
-        this.authService.isLoading.set(false);
+        this.authService.me().subscribe({
+          next: () => {
+            this.snackBar.open('Login successful', 'Close', { duration: 1000 });
+            this.router.navigate(['/']);
+            this.authService.isLoading.set(false);
+          },
+          error: () => {
+            this.snackBar.open('Login successful, but failed to load user profile', 'Close', { duration: 5000 });
+            this.authService.isLoading.set(false);
+          }
+        });
       },
       error: (error: HttpErrorResponse) => {
         const err = error.error as ApiResponse<string>;
         this.snackBar.open(`Login failed: ${err.error}`, 'Close', { duration: 5000 });
         this.authService.isLoading.set(false);
       },
-      complete: () => {
-        this.authService.isLoading.set(false);
-        this.router.navigate(['/']);
-      }
     });
   }
 
