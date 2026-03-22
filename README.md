@@ -39,7 +39,7 @@ Chat/
 
 ### Prerequisites
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/download)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download)
 - [Node.js 20+](https://nodejs.org/) & npm
 - [Angular CLI](https://angular.io/cli): `npm install -g @angular/cli`
 
