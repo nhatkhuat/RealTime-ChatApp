@@ -1,9 +1,6 @@
 name: Deploy to Azure App Service
 
 on:
-  push:
-    branches:
-      - main
   workflow_run:
     workflows: ["Build and Push Docker Images"]
     types:
@@ -14,7 +11,7 @@ on:
 jobs:
   deploy-api:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
+    if: github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success'
     
     steps:
       - name: Checkout code
@@ -24,13 +21,14 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: chatapp-api
+          type: webAppLinux
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_API }}
           images: ${{ secrets.DOCKER_USERNAME }}/chatapp-api:latest
 
   
   deploy-client:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
+    if: github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success'
     
     steps:
       - name: Checkout code
@@ -40,5 +38,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: chatapp-ui-nhatka
+          type: webAppLinux
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_CLIENT }}
           images: ${{ secrets.DOCKER_USERNAME }}/chatapp-client:latest
