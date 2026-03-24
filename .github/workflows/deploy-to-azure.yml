@@ -1,0 +1,43 @@
+name: Deploy to Azure App Service
+
+on:
+  push:
+    branches:
+      - main
+  workflow_run:
+    workflows: ["Build and Push Docker Images"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy-api:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy API to Azure
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: chatapp-api
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_API }}
+          images: ${{ secrets.DOCKER_USERNAME }}/chatapp-api:latest
+  
+  deploy-client:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy Client to Azure
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: chatapp-ui-nhatka
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_CLIENT }}
+          images: ${{ secrets.DOCKER_USERNAME }}/chatapp-client:latest

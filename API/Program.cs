@@ -7,6 +7,7 @@ using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -130,6 +131,18 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseStaticFiles();
+
+var uploadsFolder = Environment.GetEnvironmentVariable("UPLOADS_FOLDER")
+    ?? Path.Combine(app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot"), "uploads");
+
+Directory.CreateDirectory(uploadsFolder);
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsFolder),
+    RequestPath = "/uploads"
+});
+
 app.MapHub<ChatHub>("/hubs/chat").RequireCors(CorsPolicyName);
 app.MapHub<VideoChatHub>("/hubs/video").RequireCors(CorsPolicyName);
 app.MapAccountEndpoints();

@@ -18,7 +18,7 @@ public static class AccountEndPoint
     {
         var group = app.MapGroup("/api/account").WithTags("account");
 
-        group.MapPost("/register", async (HttpContext httpContext, UserManager<AppUser> userManager, IFileStorage fileStorage,
+        group.MapPost("/register", async (HttpContext httpContext, UserManager<AppUser> userManager,
         [FromForm] string FullName, [FromForm] string Email, [FromForm] string password, [FromForm] string username,
         [FromForm] IFormFile profileImage) =>
         {
@@ -35,10 +35,13 @@ public static class AccountEndPoint
 
             if (!FileUpload.IsImageAttachment(profileImage)) return Results.BadRequest(Response<string>.Failure("Profile image must be an image file."));
 
-            var pictureFileName = await fileStorage.SaveFileAsync(profileImage);
-            if (string.IsNullOrWhiteSpace(pictureFileName)) return Results.BadRequest(Response<string>.Failure("Failed to upload profile image."));
+            await using var imageStream = profileImage.OpenReadStream();
+            using var memoryStream = new MemoryStream();
+            await imageStream.CopyToAsync(memoryStream);
 
-            var picture = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/uploads/{pictureFileName}";
+            var imageBytes = memoryStream.ToArray();
+            var imageBase64 = Convert.ToBase64String(imageBytes);
+            var picture = $"data:{profileImage.ContentType};base64,{imageBase64}";
 
             var user = new AppUser
             {

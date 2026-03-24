@@ -18,7 +18,8 @@ public class FileUpload : IFileStorage
 
     public FileUpload(IWebHostEnvironment env)
     {
-        _uploadsFolder = Path.Combine(env.ContentRootPath, "wwwroot", "uploads");
+        _uploadsFolder = Environment.GetEnvironmentVariable("UPLOADS_FOLDER")
+            ?? Path.Combine(env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot"), "uploads");
         Directory.CreateDirectory(_uploadsFolder);
     }
 
