@@ -26,10 +26,10 @@ public static class FileEndpoint
 
             foreach (var file in files)
             {
-                if (file.Length > FileUpload.MaxUploadSize)
+                if (file.Length > API.Common.FileUtil.MaxUploadSize)
                     return Results.BadRequest(new { message = $"File '{file.FileName}' exceeds 10MB limit." });
 
-                if (!FileUpload.IsAllowedAttachment(file, out var attachmentType))
+                if (!API.Common.FileUtil.IsAllowedAttachment(file, out var attachmentType))
                     return Results.BadRequest(new { message = $"File type '{file.ContentType}' is not allowed." });
 
                 var savedName = await fileStorage.SaveFileAsync(file);
@@ -37,7 +37,7 @@ public static class FileEndpoint
 
                 uploadedFiles.Add(new
                 {
-                    url = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/uploads/{savedName}",
+                    url = savedName,
                     fileName = file.FileName,
                     contentType = file.ContentType,
                     attachmentType

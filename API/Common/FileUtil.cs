@@ -1,6 +1,6 @@
-namespace API.Services;
+namespace API.Common;
 
-public class FileUpload : IFileStorage
+public static class FileUtil
 {
     public const long MaxUploadSize = 10 * 1024 * 1024;
 
@@ -13,29 +13,6 @@ public class FileUpload : IFileStorage
     {
         ".pdf", ".txt", ".docx"
     };
-
-    private readonly string _uploadsFolder;
-
-    public FileUpload(IWebHostEnvironment env)
-    {
-        _uploadsFolder = Environment.GetEnvironmentVariable("UPLOADS_FOLDER")
-            ?? Path.Combine(env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot"), "uploads");
-        Directory.CreateDirectory(_uploadsFolder);
-    }
-
-    public async Task<string?> SaveFileAsync(IFormFile file)
-    {
-        if (!IsAllowedAttachment(file, out _)) return null;
-
-        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        var fileName = $"{Guid.NewGuid():N}{extension}";
-        var filePath = Path.Combine(_uploadsFolder, fileName);
-
-        await using var stream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, useAsync: true);
-        await file.CopyToAsync(stream);
-
-        return fileName;
-    }
 
     public static bool IsImageAttachment(IFormFile file) => IsAllowedAttachment(file, out var type) && type == "image";
 

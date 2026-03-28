@@ -1,6 +1,6 @@
 # RealTime-ChatApp
 
-A real-time chat application built with **Angular** (frontend) and **ASP.NET Core 9** (backend), featuring JWT authentication, user registration with profile image upload, and SQLite storage.
+A real-time chat application built with **Angular** (frontend) and **ASP.NET Core 9** (backend), featuring JWT authentication, user registration with profile image upload via Cloudinary, and SQL Server storage.
 
 ---
 
@@ -11,8 +11,8 @@ A real-time chat application built with **Angular** (frontend) and **ASP.NET Cor
 | Frontend | Angular 21, TypeScript                  |
 | Backend  | ASP.NET Core 8             |
 | Auth     | ASP.NET Core Identity + JWT Bearer      |
-| Database | SQLite (via Entity Framework Core)      |
-| Storage  | Local file system (`wwwroot/uploads/`)  |
+| Database | SQL Server (via Entity Framework Core)  |
+| Storage  | Cloudinary Cloud Storage                |
 
 ---
 
@@ -97,10 +97,15 @@ All configuration lives in `API/appsettings.json`:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Data Source=chat.db"
+    "DefaultConnection": "Server=...;Database=..."
   },
   "JWTSettings": {
     "SecurityKey": "<your-secret-key>"
+  },
+  "CloudinarySettings": {
+    "CloudName": "<your-cloud-name>",
+    "ApiKey": "<your-api-key>",
+    "ApiSecret": "<your-api-secret>"
   }
 }
 ```

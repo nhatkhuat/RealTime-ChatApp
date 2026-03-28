@@ -18,7 +18,10 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Server=db,1433;Database=ChatAppDb;User Id=sa;Password=Your_strong_password123!;TrustServerCertificate=True;MultipleActiveResultSets=true"
-      JWTSettings__SecurityKey: "super secret key this is really long aaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      JWTSettings__SecurityKey: ${JWT_SECURITY_KEY}
+      CloudinarySettings__CloudName: ${CLOUDINARY_CLOUD_NAME}
+      CloudinarySettings__ApiKey: ${CLOUDINARY_API_KEY}
+      CloudinarySettings__ApiSecret: ${CLOUDINARY_API_SECRET}
     depends_on:
       - db
     restart: unless-stopped

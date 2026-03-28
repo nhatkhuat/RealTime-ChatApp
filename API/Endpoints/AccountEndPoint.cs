@@ -18,9 +18,9 @@ public static class AccountEndPoint
     {
         var group = app.MapGroup("/api/account").WithTags("account");
 
-        group.MapPost("/register", async (HttpContext httpContext, UserManager<AppUser> userManager,
+        group.MapPost("/register", async (HttpContext httpContext, UserManager<AppUser> userManager, IFileStorage fileStorage,
         [FromForm] string FullName, [FromForm] string Email, [FromForm] string password, [FromForm] string username,
-        [FromForm] IFormFile profileImage) =>
+        [FromForm] IFormFile? profileImage) =>
         {
             var userFromDb = await userManager.FindByEmailAsync(Email);
             if (userFromDb is not null)
@@ -28,20 +28,18 @@ public static class AccountEndPoint
                 return Results.BadRequest(Response<string>.Failure("User is already exist."));
             }
 
-            if (profileImage is null)
+            string? picture = null;
+            if (profileImage != null)
             {
-                return Results.BadRequest(Response<string>.Failure("Profile image is required."));
+                if (!API.Common.FileUtil.IsImageAttachment(profileImage)) 
+                    return Results.BadRequest(Response<string>.Failure("Profile image must be an image file."));
+
+                picture = await fileStorage.SaveFileAsync(profileImage);
+                if (string.IsNullOrWhiteSpace(picture))
+                {
+                    return Results.BadRequest(Response<string>.Failure("Failed to upload profile image."));
+                }
             }
-
-            if (!FileUpload.IsImageAttachment(profileImage)) return Results.BadRequest(Response<string>.Failure("Profile image must be an image file."));
-
-            await using var imageStream = profileImage.OpenReadStream();
-            using var memoryStream = new MemoryStream();
-            await imageStream.CopyToAsync(memoryStream);
-
-            var imageBytes = memoryStream.ToArray();
-            var imageBase64 = Convert.ToBase64String(imageBytes);
-            var picture = $"data:{profileImage.ContentType};base64,{imageBase64}";
 
             var user = new AppUser
             {

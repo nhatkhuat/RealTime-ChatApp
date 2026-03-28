@@ -1,17 +1,16 @@
 name: Deploy to Azure App Service
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Build and Push Docker Images"]
     types:
       - completed
-    branches:
-      - main
 
 jobs:
   deploy-api:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
     
     steps:
       - name: Checkout code
@@ -28,7 +27,7 @@ jobs:
   
   deploy-client:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
     
     steps:
       - name: Checkout code

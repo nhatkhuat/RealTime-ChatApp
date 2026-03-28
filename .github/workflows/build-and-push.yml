@@ -25,18 +25,9 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       
-      - name: Extract metadata for API
+      - name: Set API image tag
         id: meta-api
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ secrets.DOCKER_USERNAME }}/chatapp-api
-          tags: |
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
+        run: echo "tags=${{ secrets.DOCKER_USERNAME }}/chatapp-api:latest" >> "$GITHUB_OUTPUT"
       
       - name: Build and push API image
         uses: docker/build-push-action@v5
@@ -44,22 +35,12 @@ jobs:
           context: ./API
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta-api.outputs.tags }}
-          labels: ${{ steps.meta-api.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
-      - name: Extract metadata for Client
+      - name: Set Client image tag
         id: meta-client
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ secrets.DOCKER_USERNAME }}/chatapp-client
-          tags: |
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
+        run: echo "tags=${{ secrets.DOCKER_USERNAME }}/chatapp-client:latest" >> "$GITHUB_OUTPUT"
       
       - name: Build and push Client image
         uses: docker/build-push-action@v5
@@ -67,6 +48,5 @@ jobs:
           context: ./client
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta-client.outputs.tags }}
-          labels: ${{ steps.meta-client.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
